@@ -5,14 +5,17 @@ import { ThemeToggle } from "../components/theme-toggle"
 import  { Button } from "../components/ui/button"
 import  { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../components/ui/card"
 import { Badge } from "../components/ui/badge"
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useToast } from "../hooks/use-toast"
+import { useAuth } from "../context/auth-context"
 
 
 export default function DashboardPage() {
-//   const [user, setUser] = useState<{ email: string } | null>(null)
-//   const [loading, setLoading] = useState(true)
-//   const router = useRouter()
-//   const { toast } = useToast()
-//   const { data: session } = useSession()
+  const { user, logout } = useAuth()
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+  const { toast } = useToast()
 
   // Dados mockados para demonstração
   const stats = {
@@ -24,40 +27,37 @@ export default function DashboardPage() {
     streak: 7,
   }
 
-  // useEffect(() => {
-  //   const currentUser =
-  //     typeof window !== "undefined" ? JSON.parse(localStorage.getItem("memory-cards-user") || "null") : null
+  useEffect(() => {
 
-  //   if (!currentUser) {
-  //     router.push("/")
-  //     return
-  //   }
+    if (!user) {
+      navigate("/")
+      return
+    }
 
-  //   setUser(currentUser)
-  //   setLoading(false)
-  // }, [router])
+    // setUser(currentUser)
+    setLoading(false)
+  }, [user, navigate])
 
   const handleSignOut = () => {
-    // localStorage.removeItem("memory-cards-user")
-    // manageAuthSignOut()
-    // toast({
-    //   title: "Logout realizado com sucesso!",
-    //   description: "Até logo!",
-    // })
-    // router.push("/")
+    logout()
+    toast({
+      title: "Logout realizado com sucesso!",
+      description: "Até logo!",
+    })
+    navigate("/")
   }
 
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <motion.div
-  //         animate={{ rotate: 360 }}
-  //         transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-  //         className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"
-  //       />
-  //     </div>
-  //   )
-  // }
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">

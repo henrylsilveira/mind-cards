@@ -8,15 +8,23 @@ import {
   Zap,
   Target
 } from "lucide-react";
-import { useSession, signIn, signOut } from "next-auth/react";
+// import { useSession, signIn, signOut } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { ThemeToggle } from "../components/theme-toggle";
-export default function Home() {
-  const { data: session, status } = useSession();
+import { useAuth } from "../context/auth-context";
 
-  if (status === "loading") {
-    return <p>Carregando...</p>;
+// import { useAuth } from "../context/auth-context";
+export default function Home() {
+  const { user, logout } = useAuth();
+  console.log(user)
+  function handleLoginGoogle() {
+    window.location.href = 'http://localhost:3001/auth/google'
   }
+ 
+
+  // if (status === "loading") {
+  //   return <p>Carregando...</p>;
+  // }
   return (
      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
       {/* Background decorativo */}
@@ -226,8 +234,9 @@ export default function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+
                   {/* TODO: CRIAR UM GERENCIADOR DE SESSAO */}
-                  {session?.user ? (
+                  {user ? (
                     <div className="flex flex-col w-full gap-2">
                       <a
                         href={"/dashboard"}
@@ -237,7 +246,7 @@ export default function Home() {
                       </a>
                       <button
                         className="text-lg hover:scale-105 bg-gradient-to-b text-center from-blue-500 via-red-500 to-orange-500 bg-clip-text text-transparent font-bold py-2 px-4 rounded w-full shadow-xl/30 hover:inset-shadow-md cursor-pointer ease-in-out duration-300 transition-all"
-                        onClick={() => signOut()}
+                        onClick={logout}
                       >
                         Sair
                       </button>
@@ -245,7 +254,7 @@ export default function Home() {
                   ) : (
                     <button
                       className="text-lg bg-gradient-to-b from-blue-500 via-yellow-300 to-green-500 bg-clip-text text-transparent font-bold py-2 px-4 rounded w-full shadow-xl/30 hover:inset-shadow-md cursor-pointer"
-                      onClick={() => signIn('google',  { callbackUrl: "/dashboard" })}
+                      onClick={handleLoginGoogle}
                     >
                       GOOGLE
                     </button>
