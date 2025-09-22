@@ -12,6 +12,8 @@
     "types": [],
     // For nodejs:
     "lib": ["esnext"],
+    // "moduleResolution": "bundler",
+    // "rewriteRelativeImportExtensions": true,
     // "types": ["node"],
     // and npm install -D @types/node
 

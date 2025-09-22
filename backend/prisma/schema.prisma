@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db" // Path to your SQLite database file
+}
+
+model User {
+  id            String   @id @unique @default(ulid())
+  name          String?
+  email         String   @unique
+  password      String?
+  image         String?
+  emailVerified Boolean
+  provider      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions Session[]
+  Status   Status[]
+  Theme    Theme[]
+  Card     Card[]
+  Round    Round[]
+
+  @@unique([email, provider])
+  @@map(name: "user")
+}
+
+model Session {
+  id           String   @id @unique @default(ulid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map(name: "session")
+}
+
+model Status {
+  id             String @id @unique @default(ulid())
+  userId         String
+  total_games    Int
+  total_corrects Int
+  total_wrongs   Int
+  best_streak    Int
+  total_score    Int
+  updated_at     String
+  total_cards    Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map(name: "status")
+}
+
+model Theme {
+  id         String @id @unique @default(ulid())
+  userId     String
+  theme_name String
+
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Card Card[]
+
+  @@map(name: "theme")
+}
+
+model Card {
+  id          String @id @unique @default(ulid())
+  themesId    String
+  userId      String
+  title       String
+  sub_title   String
+  description String
+  level       String
+  created_at  String
+  updated_at  String
+
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme      Theme        @relation(fields: [themesId], references: [id], onDelete: Cascade)
+  Responses  Responses?
+  DecksCards DecksCards[]
+
+  @@map(name: "card")
+}
+
+model Round {
+  id              String @id @unique @default(ulid())
+  userId          String
+  start_time      String
+  end_time        String
+  number_cards    Int
+  temp            Int
+  correct_answers Int
+  wrong_answers   Int
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Responses Responses[]
+
+  @@map(name: "round")
+}
+
+model Responses {
+  id             String @id @unique @default(ulid())
+  cardId         String @unique
+  roundId        String
+  user_response  String
+  cos_similarity Float
+  response_date  Int
+
+  card  Card  @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  round Round @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  @@map(name: "responses")
+}
+
+model Deck {
+  id         String       @id @unique @default(ulid())
+  name       String
+  created_at String
+  updated_at String
+  level      String
+  DecksCards DecksCards[]
+
+  @@map(name: "deck")
+}
+
+model DecksCards {
+  id     String @id @unique @default(ulid())
+  cardId String
+  deckId String
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  deck Deck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@map(name: "decks_cards")
+}
