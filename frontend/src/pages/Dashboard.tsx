@@ -1,62 +1,95 @@
-import  { motion } from "framer-motion"
-import { Brain, Star, LogOut, BookOpen, Play, Trophy, Settings, Zap, TrendingUp, Target, Plus } from "lucide-react"
+import { motion } from "framer-motion";
+import {
+  Brain,
+  Star,
+  LogOut,
+  BookOpen,
+  Play,
+  Trophy,
+  Settings,
+  Zap,
+  TrendingUp,
+  Target,
+  Plus,
+} from "lucide-react";
 // import { useState } from "react"
-import { ThemeToggle } from "../components/theme-toggle"
-import  { Button } from "../components/ui/button"
-import  { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../components/ui/card"
-import { Badge } from "../components/ui/badge"
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { useToast } from "../hooks/use-toast"
-import { useAuth } from "../context/auth-context"
-
+import { ThemeToggle } from "../components/theme-toggle";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/auth-context";
+import { toast } from "react-toastify";
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth()
-  const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
-  const { toast } = useToast()
+  const { user, logout } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Dados mockados para demonstração
-  const stats = {
-    totalSubjects: 5,
-    totalCards: 24,
-    totalGames: 12,
-    totalScore: 1850,
-    accuracy: 87.5,
-    streak: 7,
-  }
+  console.log(user);
 
   useEffect(() => {
-
     if (!user) {
-      navigate("/")
-      return
+      navigate("/");
+      return;
     }
 
     // setUser(currentUser)
-    setLoading(false)
-  }, [user, navigate])
+    setLoading(false);
+  }, [user, navigate]);
+
+  // Dados mockados para demonstração
+  const stats = user?.user
+    ? {
+        totalSubjects: user.user.Status.total_themes,
+        totalCards: user.user.Status.total_cards,
+        totalGames: user.user.Status.total_games,
+        totalScore: user.user.Status.total_score,
+        accuracy: (
+          (user.user.Status.total_corrects * 100) /
+          (user?.user?.Status?.total_wrongs +
+            user?.user?.Status?.total_corrects)
+        ).toFixed(2),
+        streak: user.user.Status.best_streak,
+      }
+    : {
+        totalSubjects: 0,
+        totalCards: 0,
+        totalGames: 0,
+        totalScore: 0,
+        accuracy: 0,
+        streak: 0,
+      };
 
   const handleSignOut = () => {
-    logout()
-    toast({
-      title: "Logout realizado com sucesso!",
-      description: "Até logo!",
-    })
-    navigate("/")
-  }
+    logout();
+    toast("Logout realizado com sucesso!", {
+      type: "success",
+    });
+    navigate("/");
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          transition={{
+            duration: 1,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
           className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"
         />
       </div>
-    )
+    );
   }
 
   return (
@@ -81,12 +114,16 @@ export default function DashboardPage() {
           >
             <motion.div
               animate={{ rotate: [0, 360] }}
-              transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+              transition={{
+                duration: 10,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear",
+              }}
             >
-              <Brain className="h-8 w-8 text-primary" />
+              <Brain className="h-8 w-8 text-white" />
             </motion.div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Memory Cards
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
+              Mind Cards
             </h1>
           </motion.div>
 
@@ -99,7 +136,14 @@ export default function DashboardPage() {
               className="flex items-center space-x-2"
             >
               <Star className="h-4 w-4 text-yellow-500" />
-              {/* <span className="text-sm text-muted-foreground">Olá, {session?.user?.name}</span> */}
+              <div className="flex flex-col">
+                <p className="text-sm text-muted-foreground">
+                  Olá, {user?.user?.name}
+                </p>
+                <span className="text-xs text-zinc-4r1200">
+                  {user?.user?.email}
+                </span>
+              </div>
             </motion.div>
             <Button
               variant="outline"
@@ -125,7 +169,9 @@ export default function DashboardPage() {
           <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
             Dashboard
           </h2>
-          <p className="text-muted-foreground text-lg">Gerencie seus cards e acompanhe seu progresso</p>
+          <p className="text-muted-foreground text-lg">
+            Gerencie seus cards e acompanhe seu progresso
+          </p>
         </motion.div>
 
         {/* Cards de estatísticas */}
@@ -177,7 +223,9 @@ export default function DashboardPage() {
             >
               <Card className="glass hover:shadow-lg transition-all duration-300">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    {stat.title}
+                  </CardTitle>
                   <motion.div
                     whileHover={{ rotate: 360, scale: 1.2 }}
                     transition={{ duration: 0.6 }}
@@ -195,7 +243,9 @@ export default function DashboardPage() {
                   >
                     {stat.value}
                   </motion.div>
-                  <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {stat.description}
+                  </p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -207,7 +257,8 @@ export default function DashboardPage() {
           {[
             {
               title: "Gerenciar Cards",
-              description: "Crie, edite e organize seus memory cards por assuntos",
+              description:
+                "Crie, edite e organize seus memory cards por assuntos",
               icon: Settings,
               badge: `${stats.totalCards} cards`,
               buttonText: "Gerenciar",
@@ -252,21 +303,29 @@ export default function DashboardPage() {
                       <motion.div
                         whileHover={{ rotate: 360 }}
                         transition={{ duration: 0.6 }}
-                        className="p-2 rounded-lg bg-primary/10 text-primary"
+                        className="p-2 rounded-lg bg-primary/10 text-white"
                       >
-                        <action.icon className="h-6 w-6" />
+                        <action.icon className="h-6 w-6 text-white" />
                       </motion.div>
-                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                      <Badge
+                        variant="secondary"
+                        className="bg-primary/10 text-white border-zinc-700 dark:border-zinc/20"
+                      >
                         {action.badge}
                       </Badge>
                     </div>
                     <CardTitle className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                       {action.title}
                     </CardTitle>
-                    <CardDescription className="text-muted-foreground">{action.description}</CardDescription>
+                    <CardDescription className="text-muted-foreground">
+                      {action.description}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="relative">
-                    <motion.div whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
+                    <motion.div
+                      whileHover={{ x: 5 }}
+                      transition={{ duration: 0.2 }}
+                    >
                       <Button
                         className={`w-full bg-gradient-to-r ${action.color} hover:shadow-lg transition-all duration-300`}
                       >
@@ -290,10 +349,12 @@ export default function DashboardPage() {
             <Card className="glass">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <TrendingUp className="h-5 w-5 text-white" />
                   Seu Progresso
                 </CardTitle>
-                <CardDescription>Estatísticas detalhadas do seu desempenho</CardDescription>
+                <CardDescription>
+                  Estatísticas detalhadas do seu desempenho
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -326,15 +387,21 @@ export default function DashboardPage() {
             <Card className="glass">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-primary" />
+                  <Target className="h-5 w-5 text-white" />
                   Próximos Passos
                 </CardTitle>
-                <CardDescription>Continue evoluindo seus estudos</CardDescription>
+                <CardDescription>
+                  Continue evoluindo seus estudos
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center py-4">
-                  <div className="text-3xl font-bold text-primary mb-2">{stats.totalCards}</div>
-                  <p className="text-muted-foreground mb-4">Cards criados até agora</p>
+                  <div className="text-3xl font-bold text-white mb-2">
+                    {stats.totalCards}
+                  </div>
+                  <p className="text-muted-foreground mb-4">
+                    Cards criados até agora
+                  </p>
                   <div className="flex gap-2">
                     <a href="/cards" className="flex-1">
                       <Button className="w-full" size="sm">
@@ -343,7 +410,11 @@ export default function DashboardPage() {
                       </Button>
                     </a>
                     <a href="/game" className="flex-1">
-                      <Button variant="outline" className="w-full bg-transparent" size="sm">
+                      <Button
+                        variant="outline"
+                        className="w-full bg-transparent"
+                        size="sm"
+                      >
                         <Play className="h-4 w-4 mr-2" />
                         Praticar
                       </Button>
@@ -356,5 +427,5 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }

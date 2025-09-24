@@ -3,15 +3,32 @@ import { createContext, useContext } from "react";
 // Descreve o payload que esperamos de dentro do nosso JWT
 interface UserPayload {
   id: string;
-  email: string;
-  verified_email: boolean;
-  given_name: string;
-  family_name: string;
-  name: string;
-  picture: string;
-  // Campos padrão do JWT (iat: issued at, exp: expiration time)
   iat: number;
   exp: number;
+  sessionToken: string;
+  user: {
+    id: string;
+    email: string;
+    createdAt: string;
+    emailVerified: boolean;
+    name: string;
+    image: string;
+    password: string;
+    provider: string;
+    updatedAt: string;
+    Status:{
+      best_streak: number;
+      total_themes: number;
+      total_cards: number;
+      total_corrects: number;
+      total_games: number;
+      total_score: number;
+      total_wrongs: number;
+      updated_at: string;
+      userId: string;
+    }
+  }
+  // Campos padrão do JWT (iat: issued at, exp: expiration time)
 }
 interface AuthContextType {
   user: UserPayload | null;

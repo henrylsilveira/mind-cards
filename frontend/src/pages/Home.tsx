@@ -66,7 +66,7 @@ export default function Home() {
                   }}
                   className="relative"
                 >
-                  <Brain className="h-16 w-16 text-primary drop-shadow-lg" />
+                  <Brain className="h-16 w-16 text-white drop-shadow-lg" />
                   <motion.div
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{
@@ -88,7 +88,7 @@ export default function Home() {
 
               <div className="flex items-center justify-center lg:justify-start gap-2 mb-8">
                 <Sparkles className="h-5 w-5 text-yellow-500 animate-pulse" />
-                <span className="text-sm font-medium text-primary">
+                <span className="text-sm font-medium text-white">
                   Gamificado • Inteligente • Divertido
                 </span>
                 <Sparkles className="h-5 w-5 text-yellow-500 animate-pulse" />
@@ -166,7 +166,7 @@ export default function Home() {
               <Card className="glass">
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
+                    <Target className="h-5 w-5 text-white" />
                     <CardTitle className="text-lg">Como Funciona</CardTitle>
                   </div>
                   <CardDescription>
@@ -198,11 +198,11 @@ export default function Home() {
                       transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
                       className="flex items-center space-x-3 group"
                     >
-                      <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
+                      <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 text-white-foreground rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
                         {item.step}
                       </div>
                       <div>
-                        <h4 className="font-medium text-sm group-hover:text-primary transition-colors">
+                        <h4 className="font-medium text-sm group-hover:text-white transition-colors">
                           {item.title}
                         </h4>
                         <p className="text-xs text-muted-foreground">
@@ -390,7 +390,7 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: 1 + index * 0.1 }}
                 className="text-center"
               >
-                <div className="text-2xl font-bold text-primary mb-1">
+                <div className="text-2xl font-bold text-white mb-1">
                   {stat.number}
                 </div>
                 <div className="text-sm text-muted-foreground">

@@ -1,3 +1,3 @@
 import { Router } from "express";
 
-    export const rtr = Router();
+export const router = Router();

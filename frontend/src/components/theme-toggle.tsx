@@ -35,17 +35,17 @@ export function ThemeToggle() {
         <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer">
           <Sun className="mr-2 h-4 w-4" />
           <span>Claro</span>
-          {theme === "light" && <span className="ml-auto text-primary">✓</span>}
+          {theme === "light" && <span className="ml-auto text-white">✓</span>}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer">
           <Moon className="mr-2 h-4 w-4" />
           <span>Escuro</span>
-          {theme === "dark" && <span className="ml-auto text-primary">✓</span>}
+          {theme === "dark" && <span className="ml-auto text-white">✓</span>}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("system")} className="cursor-pointer">
           <Monitor className="mr-2 h-4 w-4" />
           <span>Sistema</span>
-          {theme === "system" && <span className="ml-auto text-primary">✓</span>}
+          {theme === "system" && <span className="ml-auto text-white">✓</span>}
         </DropdownMenuItem>
       </DropdownMenuContent> */}
     </DropdownMenu>
