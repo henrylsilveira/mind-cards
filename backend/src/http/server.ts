@@ -16,8 +16,8 @@ app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json());
 app.set("trust proxy", true)
 
-app.get("/health", () => {
-  return "ok";
+app.get("/health", (req,res) => {
+  return res.status(200).json({ message: "OK" });
 });
 
 app.use("/auth", routeAuth)
