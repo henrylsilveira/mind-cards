@@ -8,7 +8,8 @@ import routeUser from "./routes/routeUser";
 import routeGame from "./routes/routeGame";
 
 const app = express();
-const port = 3001; // Port for the backend server
+ // Port for the backend server
+const PORT = process.env.PORT || 3001;
 
 // Habilita o CORS para permitir requisições do seu frontend Vite
 app.use(cors({ origin: process.env.CLIENT_URL }));
@@ -25,6 +26,6 @@ app.use("/card", routeCard)
 app.use("/theme", routeTheme)
 app.use("/game", routeGame)
 
-app.listen(port, () => {
-  console.log(`[Server] Listening on http://localhost:${port}/`);
+app.listen(PORT, () => {
+  console.log(`[Server] Listening on http://localhost:${PORT}/`);
 });
