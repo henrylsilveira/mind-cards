@@ -12,7 +12,7 @@ export default defineConfig({
     proxy: {
       // Esta regra é a chave de tudo:
       '/api': {
-        target: 'http://localhost:3001', // O endereço do seu backend
+        target: process.env.node_env === 'development' ? process.env.BACKEND_DEV_URL : process.env.BACKEND_PROD_URL, // O endereço do seu backend
         changeOrigin: true,
       },
     },
