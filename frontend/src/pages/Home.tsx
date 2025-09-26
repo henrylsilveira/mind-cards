@@ -16,9 +16,8 @@ import { useAuth } from "../context/auth-context";
 // import { useAuth } from "../context/auth-context";
 export default function Home() {
   const { user, logout } = useAuth();
-  console.log(user)
   function handleLoginGoogle() {
-    window.location.href = 'http://localhost:3001/auth/google'
+    window.location.href = `${process.env.BACKEND_URL}/auth/google`
   }
  
 
