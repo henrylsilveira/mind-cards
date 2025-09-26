@@ -13,7 +13,10 @@ dist-ssr
 *.local
 .env
 
-dev.db
+*.db
+prisma/dev.db
+prisma/*.db
+.prisma/*.db
 
 # Editor directories and files
 .vscode/*

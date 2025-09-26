@@ -1,4 +1,5 @@
 import api from "../../services/api";
+import type { ThemeProps } from "./types";
 
 export default async function createTheme({ formdata }: { formdata: ThemeProps }) {
   try {

@@ -12,7 +12,6 @@ import {
   CheckCircle,
   Clock,
   Flame,
-  Link,
   Play,
   RotateCcw,
   Settings,
@@ -46,11 +45,13 @@ import { Textarea } from "../components/ui/textarea";
 import { Progress } from "../components/ui/progress";
 import { toast } from "react-toastify";
 import { GameLoading } from "../components/loading";
-import { getDifficultyClass, getDifficultyText } from '../libs/utils/scripts';
+import { getDifficultyClass, getDifficultyText } from "../libs/utils/scripts";
 import { useQuery } from "@tanstack/react-query";
 import getThemeByUser from "../events/theme/get-theme-by-user";
 import getRandomCardToGame from "../events/card/get-random-card-game";
 import type { CardProps } from "../events/card/types";
+import startNewGame from "../events/game/start-new-game";
+import updateGameStatus from "../events/game/update-game-status";
 
 // interface GameCard extends CardProps {
 //   id: string;
@@ -79,6 +80,7 @@ interface GameStats {
 }
 
 interface GameState {
+  idGame: string;
   currentCardIndex: number;
   cards: CardProps[];
   score: number;
@@ -101,9 +103,10 @@ export default function GamePage() {
   const [showConfig, setShowConfig] = useState(true);
   const navigate = useNavigate();
 
-  const { data: themes,
-    //  isPending: isPendingThemes 
-    } = useQuery({
+  const {
+    data: themes,
+    //  isPending: isPendingThemes
+  } = useQuery({
     queryKey: ["themes"],
     queryFn: async () => user && getThemeByUser(user.user.id),
   });
@@ -174,7 +177,7 @@ export default function GamePage() {
     gameMode: "practice",
     difficultyRange: [1, 5],
   });
-  console.log(config);
+
 
   const [gameState, setGameState] = useState<GameState>({
     currentCardIndex: 0,
@@ -198,6 +201,7 @@ export default function GamePage() {
     },
     cardStartTime: 0,
     totalGameTime: 0,
+    idGame: "",
   });
 
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
@@ -213,9 +217,9 @@ export default function GamePage() {
       });
       if (cards.length === 0) {
         toast("Nenhum card encontrado.", { type: "error" });
-        return
+        return;
       }
-        
+
       return cards;
     } catch (error) {
       console.error("Erro ao gerar cards:", error);
@@ -271,8 +275,8 @@ export default function GamePage() {
 
   const startGame = async () => {
     let selectedCards = await generateCards();
-    if(!selectedCards) {
-      return
+    if (!selectedCards) {
+      return;
     }
 
     // if (config.subjectId) {
@@ -322,7 +326,17 @@ export default function GamePage() {
       },
       cardStartTime: Date.now(),
       totalGameTime: 0,
+      idGame: "",
     });
+    const response = await startNewGame({
+      userId: user!.user.id,
+      number_cards: gameState.cards.length,
+    });
+    if (!response) {
+      toast("Erro ao iniciar o jogo.", { type: "error" });
+      return;
+    }
+    setGameState((prev) => ({ ...prev, idGame: response.id }));
     setGameStarted(true);
     setShowConfig(false);
     toast("🎮 Jogo iniciado! Boa sorte!", { type: "success" });
@@ -414,8 +428,23 @@ export default function GamePage() {
     }
   };
 
-  const completeGame = () => {
+  const completeGame = async () => {
     setGameState((prev) => ({ ...prev, gameCompleted: true }));
+    const response = await updateGameStatus({
+      id: gameState.idGame,
+      score: gameState.score,
+      correct_answers: gameState.correctAnswers,
+      wrong_answers: gameState.wrongAnswers,
+      temp: gameState.totalGameTime,
+      number_cards: gameState.cards.length,
+      best_streak: gameState.stats.bestStreak,
+    });
+    console.log(gameState.stats.totalTime);
+    if (!response) {
+      toast("Erro ao finalizar o jogo. Dados do jogo não foram salvos.", { type: "error" });
+      return;
+    }
+
     if (gameTimer) clearInterval(gameTimer);
 
     const finalAccuracy =
@@ -438,6 +467,7 @@ export default function GamePage() {
     setGameStarted(false);
     setShowConfig(true);
     setGameState({
+      idGame: "",
       currentCardIndex: 0,
       cards: [],
       score: 0,
@@ -820,16 +850,16 @@ export default function GamePage() {
                           ))}
                         </div>
                       </div>
-
                       <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        whileHover={{ x: 5 }}
+                        transition={{ duration: 0.2 }}
                       >
                         <Button
                           onClick={startGame}
-                          className="w-full"
                           size="lg"
+                          className={`w-full bg-gradient-to-r from-zinc-900 to-zinc-800 ease-in-out hover:shadow-lg transition-all duration-500 relative overflow-hidden hover:border-slate-900 after:hover:border group hover:from-slate-800 hover:to-blue-800`}
                         >
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                           <Play className="h-5 w-5 mr-2" />
                           Iniciar Jogo
                         </Button>
@@ -1066,19 +1096,42 @@ export default function GamePage() {
                   </div>
 
                   <div className="flex gap-4">
-                    <Button onClick={resetGame} className="flex-1">
-                      <RotateCcw className="h-4 w-4 mr-2" />
-                      Jogar Novamente
-                    </Button>
-                    <Link href="/rankings" className="flex-1">
+                    <motion.div
+                      whileHover={{ x: 5 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex-1"
+                    >
                       <Button
+                        onClick={resetGame}
+                        className={`w-full bg-gradient-to-r from-zinc-900 to-zinc-800  hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-slate-900 after:hover:border group`}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Jogar Novamente
+                      </Button>
+                    </motion.div>
+
+                    <a href="/rankings" className="flex-1">
+                      <motion.div
+                        whileHover={{ x: 5 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Button
+                          className={`w-full bg-transparent hover:shadow-lg ease-in-out transition-all duration-300 relative overflow-hidden hover:border-slate-700 border border-slate-800 hover:bg-gradient-to-r hover:from-slate-950 to-purple-900 group`}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                          <Users className="h-4 w-4 mr-2" />
+                          Ver Rankings
+                        </Button>
+                      </motion.div>
+                      {/* <Button
                         variant="outline"
                         className="w-full bg-transparent"
                       >
                         <Users className="h-4 w-4 mr-2" />
                         Ver Rankings
-                      </Button>
-                    </Link>
+                      </Button> */}
+                    </a>
                   </div>
                 </CardContent>
               </Card>
@@ -1150,11 +1203,12 @@ export default function GamePage() {
                             </CardTitle>
                             <div className="flex items-center space-x-2">
                               <Badge
-                                className={`${
-                                  getDifficultyClass(getCurrentCard()?.level)
-                                }`}
+                                className={`${getDifficultyClass(
+                                  getCurrentCard()?.level
+                                )}`}
                               >
-                                Nível { getDifficultyText(getCurrentCard()?.level)}
+                                Nível{" "}
+                                {getDifficultyText(getCurrentCard()?.level)}
                               </Badge>
                               <Badge variant="outline">
                                 {getCurrentCard()?.theme_name}
@@ -1198,7 +1252,8 @@ export default function GamePage() {
                               {getCurrentCard()?.description.substring(
                                 0,
                                 Math.floor(
-                                  (getCurrentCard()?.description.length || 0) * 0.4
+                                  (getCurrentCard()?.description.length || 0) *
+                                    0.4
                                 )
                               )}
                               ...
@@ -1229,12 +1284,13 @@ export default function GamePage() {
                                   disabled={gameState.timeLeft === 0}
                                 />
                               </div>
+
                               <Button
                                 onClick={() => checkAnswer()}
-                                className="w-full"
-                                size="lg"
                                 disabled={!gameState.userAnswer.trim()}
+                                className={`w-full bg-gradient-to-r from-green-950 via-green-700 to-green-600  hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-slate-900 after:hover:border group hover:scale-105`}
                               >
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                                 <CheckCircle className="h-5 w-5 mr-2" />
                                 Confirmar Resposta
                               </Button>

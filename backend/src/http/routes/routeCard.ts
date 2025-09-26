@@ -370,10 +370,10 @@ router.get("/game/random/:userId", async (req, res) => {
       );
     }
 
-    res.status(200).json(randomCards);
+    return res.status(200).json(randomCards);
   } catch (error) {
     console.error("Erro ao buscar cards aleatórios:", error);
-    res.status(500).json({ error: "Erro interno ao buscar os cards." });
+    return res.status(500).json({ error: "Erro interno ao buscar os cards." });
   }
 });
 

@@ -12,7 +12,6 @@ import {
   Target,
   Plus,
 } from "lucide-react";
-// import { useState } from "react"
 import { ThemeToggle } from "../components/theme-toggle";
 import { Button } from "../components/ui/button";
 import {
@@ -27,37 +26,50 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/auth-context";
 import { toast } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
+import getUserStatus from "../events/user/get-user-status";
+import { BrainLoading } from "../components/loading";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  console.log(user);
-
   useEffect(() => {
     if (!user) {
       navigate("/");
       return;
     }
-
+    refetch();
     // setUser(currentUser)
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, navigate]);
 
+  const { data, isPending, refetch } = useQuery({
+    queryKey: ["status"],
+    queryFn: async () => user && getUserStatus({ userId: user.user.id }),
+  });
+
   // Dados mockados para demonstração
-  const stats = user?.user
+  const stats: {
+    totalSubjects: number;
+    totalCards: number;
+    totalGames: number;
+    totalScore: number;
+    accuracy: number;
+    streak: number;
+  } = data
     ? {
-        totalSubjects: user.user.Status.total_themes,
-        totalCards: user.user.Status.total_cards,
-        totalGames: user.user.Status.total_games,
-        totalScore: user.user.Status.total_score,
-        accuracy: (
-          (user.user.Status.total_corrects * 100) /
-          (user?.user?.Status?.total_wrongs +
-            user?.user?.Status?.total_corrects)
-        ).toFixed(2),
-        streak: user.user.Status.best_streak,
+        totalSubjects: data.total_themes,
+        totalCards: data.total_cards,
+        totalGames: data.total_games,
+        totalScore: data.total_score,
+        accuracy: Number((
+          (data.total_corrects * 100) /
+          (data.total_wrongs + data.total_corrects)
+        )) || 0,
+        streak: data.best_streak,
       }
     : {
         totalSubjects: 0,
@@ -174,257 +186,288 @@ export default function DashboardPage() {
           </p>
         </motion.div>
 
-        {/* Cards de estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {[
-            {
-              title: "Assuntos",
-              value: stats.totalSubjects,
-              description: "categorias criadas",
-              icon: BookOpen,
-              color: "text-blue-600",
-              bgColor: "bg-blue-100 dark:bg-blue-900/30",
-              delay: 0,
-            },
-            {
-              title: "Cards",
-              value: stats.totalCards,
-              description: "cards disponíveis",
-              icon: Brain,
-              color: "text-green-600",
-              bgColor: "bg-green-100 dark:bg-green-900/30",
-              delay: 0.1,
-            },
-            {
-              title: "Jogos",
-              value: stats.totalGames,
-              description: "sessões jogadas",
-              icon: Play,
-              color: "text-purple-600",
-              bgColor: "bg-purple-100 dark:bg-purple-900/30",
-              delay: 0.2,
-            },
-            {
-              title: "Pontuação",
-              value: stats.totalScore,
-              description: "pontos totais",
-              icon: Trophy,
-              color: "text-yellow-600",
-              bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
-              delay: 0.3,
-            },
-          ].map((stat, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: stat.delay }}
-              whileHover={{ scale: 1.05 }}
-            >
-              <Card className="glass hover:shadow-lg transition-all duration-300">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {stat.title}
-                  </CardTitle>
-                  <motion.div
-                    whileHover={{ rotate: 360, scale: 1.2 }}
-                    transition={{ duration: 0.6 }}
-                    className={`p-2 rounded-full ${stat.bgColor}`}
-                  >
-                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                  </motion.div>
-                </CardHeader>
-                <CardContent>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5, delay: stat.delay + 0.2 }}
-                    className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent"
-                  >
-                    {stat.value}
-                  </motion.div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stat.description}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Cards de ação */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {[
-            {
-              title: "Gerenciar Cards",
-              description:
-                "Crie, edite e organize seus memory cards por assuntos",
-              icon: Settings,
-              badge: `${stats.totalCards} cards`,
-              buttonText: "Gerenciar",
-              href: "/cards",
-              color: "from-blue-600 to-blue-500",
-              delay: 0,
-            },
-            {
-              title: "Iniciar Jogo",
-              description: "Configure e inicie uma nova sessão de treinamento",
-              icon: Zap,
-              badge: `${stats.totalSubjects} assuntos`,
-              buttonText: "Jogar Agora",
-              href: "/game",
-              color: "from-green-600 to-green-500",
-              delay: 0.1,
-            },
-            {
-              title: "Rankings",
-              description: "Veja seu progresso e compare com outros jogadores",
-              icon: Trophy,
-              badge: `${stats.totalGames} jogos`,
-              buttonText: "Ver Ranking",
-              href: "/rankings",
-              color: "from-purple-600 to-purple-500",
-              delay: 0.2,
-            },
-          ].map((action, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: action.delay }}
-              whileHover={{ scale: 1.02, rotateY: 5 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <a href={action.href}>
-                <Card className="h-full glass hover:shadow-xl transition-all duration-300 cursor-pointer group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                  <CardHeader className="relative">
-                    <div className="flex items-center justify-between">
+        {isPending ? (
+          <div className="col-span-3 bg-slate-900 rounded-lg border border-slate-700 backdrop-blur-md">
+            <BrainLoading text="Procurando assuntos..." />
+          </div>
+        ) : (
+          <>
+            {/* Cards de estatísticas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {[
+                {
+                  title: "Assuntos",
+                  value: stats.totalSubjects,
+                  description: "categorias criadas",
+                  icon: BookOpen,
+                  color: "text-blue-600",
+                  bgColor: "bg-blue-100 dark:bg-blue-900/30",
+                  delay: 0,
+                },
+                {
+                  title: "Cards",
+                  value: stats.totalCards,
+                  description: "cards disponíveis",
+                  icon: Brain,
+                  color: "text-green-600",
+                  bgColor: "bg-green-100 dark:bg-green-900/30",
+                  delay: 0.1,
+                },
+                {
+                  title: "Jogos",
+                  value: stats.totalGames,
+                  description: "sessões jogadas",
+                  icon: Play,
+                  color: "text-purple-600",
+                  bgColor: "bg-purple-100 dark:bg-purple-900/30",
+                  delay: 0.2,
+                },
+                {
+                  title: "Pontuação",
+                  value: stats.totalScore,
+                  description: "pontos totais",
+                  icon: Trophy,
+                  color: "text-yellow-600",
+                  bgColor: "bg-yellow-100 dark:bg-yellow-900/30",
+                  delay: 0.3,
+                },
+              ].map((stat, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: stat.delay }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <Card className="glass hover:shadow-lg transition-all duration-300">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        {stat.title}
+                      </CardTitle>
                       <motion.div
-                        whileHover={{ rotate: 360 }}
+                        whileHover={{ rotate: 360, scale: 1.2 }}
                         transition={{ duration: 0.6 }}
-                        className="p-2 rounded-lg bg-primary/10 text-white"
+                        className={`p-2 rounded-full ${stat.bgColor}`}
                       >
-                        <action.icon className="h-6 w-6 text-white" />
+                        <stat.icon className={`h-4 w-4 ${stat.color}`} />
                       </motion.div>
-                      <Badge
-                        variant="secondary"
-                        className="bg-primary/10 text-white border-zinc-700 dark:border-zinc/20"
+                    </CardHeader>
+                    <CardContent>
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{
+                          duration: 0.5,
+                          delay: stat.delay + 0.2,
+                        }}
+                        className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent"
                       >
-                        {action.badge}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                      {action.title}
+                        {stat.value}
+                      </motion.div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {stat.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Cards de ação */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {[
+                {
+                  title: "Gerenciar Cards",
+                  description:
+                    "Crie, edite e organize seus memory cards por assuntos",
+                  icon: Settings,
+                  badge: `${stats.totalCards} cards`,
+                  buttonText: "Gerenciar",
+                  href: "/cards",
+                  color: "from-blue-600 to-blue-500",
+                  delay: 0,
+                },
+                {
+                  title: "Iniciar Jogo",
+                  description:
+                    "Configure e inicie uma nova sessão de treinamento",
+                  icon: Zap,
+                  badge: `${stats.totalSubjects} assuntos`,
+                  buttonText: "Jogar Agora",
+                  href: "/game",
+                  color: "from-green-600 to-green-500",
+                  delay: 0.1,
+                },
+                {
+                  title: "Rankings",
+                  description:
+                    "Veja seu progresso e compare com outros jogadores",
+                  icon: Trophy,
+                  badge: `${stats.totalGames} jogos`,
+                  buttonText: "Ver Ranking",
+                  href: "/rankings",
+                  color: "from-purple-600 to-purple-500",
+                  delay: 0.2,
+                },
+              ].map((action, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: action.delay }}
+                  whileHover={{ scale: 1.02, rotateY: 5 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <a href={action.href}>
+                    <Card className="h-full w-full glass hover:shadow-xl transition-all duration-300 cursor-pointer group">
+                      <CardHeader className="relative">
+                        <div className="flex items-center justify-between">
+                          <motion.div
+                            whileHover={{ rotate: 360 }}
+                            transition={{ duration: 0.6 }}
+                            className="p-2 rounded-lg bg-primary/10 text-white"
+                          >
+                            <action.icon className="h-6 w-6 text-white" />
+                          </motion.div>
+                          <Badge
+                            variant="secondary"
+                            className="bg-primary/10 text-white border-zinc-700 dark:border-zinc/20"
+                          >
+                            {action.badge}
+                          </Badge>
+                        </div>
+                        <CardTitle className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                          {action.title}
+                        </CardTitle>
+                        <CardDescription className="text-muted-foreground">
+                          {action.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="relative">
+                        <motion.div
+                          whileHover={{ x: 5 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Button
+                            className={`w-full bg-gradient-to-r ${action.color} hover:shadow-lg transition-all duration-300 relative overflow-hidden`}
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                            {action.buttonText}
+                          </Button>
+                        </motion.div>
+                      </CardContent>
+                    </Card>
+                  </a>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Progresso e estatísticas detalhadas */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                <Card className="glass">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-white" />
+                      Seu Progresso
                     </CardTitle>
-                    <CardDescription className="text-muted-foreground">
-                      {action.description}
+                    <CardDescription>
+                      Estatísticas detalhadas do seu desempenho
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="relative">
-                    <motion.div
-                      whileHover={{ x: 5 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Button
-                        className={`w-full bg-gradient-to-r ${action.color} hover:shadow-lg transition-all duration-300`}
-                      >
-                        {action.buttonText}
-                      </Button>
-                    </motion.div>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Precisão:</span>
+                      <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                        {stats.accuracy}%
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">
+                        Sequência atual:
+                      </span>
+                      <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                        {stats.streak} acertos
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">
+                        Pontuação média:
+                      </span>
+                      <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                        {Math.round(stats.totalScore / stats.totalGames) || 0}{" "}
+                        pts/jogo
+                      </Badge>
+                    </div>
                   </CardContent>
                 </Card>
-              </a>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
 
-        {/* Progresso e estatísticas detalhadas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <Card className="glass">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-white" />
-                  Seu Progresso
-                </CardTitle>
-                <CardDescription>
-                  Estatísticas detalhadas do seu desempenho
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Precisão:</span>
-                  <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                    {stats.accuracy}%
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Sequência atual:</span>
-                  <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                    {stats.streak} acertos
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Pontuação média:</span>
-                  <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
-                    {Math.round(stats.totalScore / stats.totalGames)} pts/jogo
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            <Card className="glass">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-white" />
-                  Próximos Passos
-                </CardTitle>
-                <CardDescription>
-                  Continue evoluindo seus estudos
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center py-4">
-                  <div className="text-3xl font-bold text-white mb-2">
-                    {stats.totalCards}
-                  </div>
-                  <p className="text-muted-foreground mb-4">
-                    Cards criados até agora
-                  </p>
-                  <div className="flex gap-2">
-                    <a href="/cards" className="flex-1">
-                      <Button className="w-full" size="sm">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Criar Mais
-                      </Button>
-                    </a>
-                    <a href="/game" className="flex-1">
-                      <Button
-                        variant="outline"
-                        className="w-full bg-transparent"
-                        size="sm"
-                      >
-                        <Play className="h-4 w-4 mr-2" />
-                        Praticar
-                      </Button>
-                    </a>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+              >
+                <Card className="glass">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5 text-white" />
+                      Próximos Passos
+                    </CardTitle>
+                    <CardDescription>
+                      Continue evoluindo seus estudos
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="text-center py-4">
+                      <div className="text-3xl font-bold text-white mb-2">
+                        {stats.totalCards}
+                      </div>
+                      <p className="text-muted-foreground mb-4">
+                        Cards criados até agora
+                      </p>
+                      <div className="flex gap-2">
+                        <a href="/cards" className="flex-1">
+                          <motion.div
+                            whileHover={{ x: 5 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <Button
+                              className={`w-full bg-gradient-to-r from-zinc-900 to-zinc-800  hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-slate-900 after:hover:border group`}
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                              <Plus className="h-4 w-4 mr-2" />
+                              Criar Mais
+                            </Button>
+                          </motion.div>
+                        </a>
+                        <a href="/game" className="flex-1">
+                          
+                          <motion.div
+                            whileHover={{ x: 5 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <Button
+                              className={`w-full bg-transparent hover:shadow-lg transition-all duration-300 relative overflow-hidden hover:border-slate-700 border border-slate-800 hover:bg-slate-800 group`}
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                              <Play className="h-4 w-4 mr-2" />
+                            Praticar
+                            </Button>
+                          </motion.div>
+                        </a>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

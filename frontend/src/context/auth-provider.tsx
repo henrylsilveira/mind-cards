@@ -1,4 +1,4 @@
-import React, {
+import {
   useState,
   useEffect,
   useMemo,
@@ -7,32 +7,8 @@ import React, {
 } from "react";
 import { jwtDecode } from "jwt-decode";
 import { AuthContext } from "./auth-context";
+import type { AuthContextType, UserPayload } from "./auth";
 
-// --- 1. DEFINIÇÃO DOS TIPOS ---
-
-// Descreve o payload que esperamos de dentro do nosso JWT
-interface UserPayload {
-  id: string;
-  email: string;
-  verified_email: boolean;
-  given_name: string;
-  family_name: string;
-  name: string;
-  picture: string;
-  // Campos padrão do JWT (iat: issued at, exp: expiration time)
-  iat: number;
-  exp: number;
-}
-
-// Descreve o que nosso contexto vai fornecer
-interface AuthContextType {
-  user: UserPayload | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  loading: boolean;
-  login: (jwtToken: string) => void;
-  logout: () => void;
-}
 
 // Descreve as props que o nosso Provider vai receber
 interface AuthProviderProps {
@@ -41,7 +17,7 @@ interface AuthProviderProps {
 
 // --- 3. O COMPONENTE PROVIDER ---
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Estados tipados
   const [user, setUser] = useState<UserPayload | null>(null);
   const [token, setToken] = useState<string | null>(null);
