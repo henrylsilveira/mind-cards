@@ -11,7 +11,7 @@ const app = express();
 const port = 3001; // Port for the backend server
 
 // Habilita o CORS para permitir requisições do seu frontend Vite
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json());
 app.set("trust proxy", true)
 
