@@ -15,6 +15,10 @@ app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json());
 app.set("trust proxy", true)
 
+app.get("/health", () => {
+  return "ok";
+});
+
 app.use("/auth", routeAuth)
 app.use("/user", routeUser)
 app.use("/card", routeCard)
