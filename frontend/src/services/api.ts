@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Cria uma instância do axios
 const api = axios.create({
-  baseURL: process.env.node_env === 'development' ? 'http://localhost:3001' : 'https://mind-cards-y5rj.vercel.app', // URL base da sua API
+  baseURL: process.env.node_env === 'development' ? process.env.BACKEND_DEV_URL : process.env.BACKEND_PROD_URL, // URL base da sua API
 });
 
 // Adiciona um "interceptor" que será executado antes de cada requisição
